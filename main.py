@@ -12,26 +12,22 @@
 #
 import json
 import os
-
-from typing import Any, Union, List
 import sys
-import uvicorn
 from enum import Enum
-import gzip
-from fastapi.openapi.utils import get_openapi
-from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect,Query, Cookie, status, Depends
-from fastapi.responses import StreamingResponse, RedirectResponse, JSONResponse, PlainTextResponse,HTMLResponse, FileResponse
-from fastapi.middleware.gzip import GZipMiddleware
+
+import uvicorn
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import StreamingResponse, PlainTextResponse
 
 from cxm.buckets.apps import AppSession
 from cxm.models import Scene, ScenePatch, Scenes
-from fastapi import websockets
 
 sys.path.extend([f"{os.getenv('PWD')}/mount_sorces"])
 print("Starting mmodel server ...")
-
 
 
 class CxmViewerAppSession(AppSession):
@@ -52,6 +48,10 @@ class CxmViewerAppSession(AppSession):
 
     def get_decompress_view(self, name):
         with self.s3.get_object(Bucket=self.bucket, Key=self.decompress_view + name)["Body"] as obj:
+            yield from obj
+
+    def get_compress_view(self, name):
+        with self.s3.get_object(Bucket=self.bucket, Key=self.view + name)["Body"] as obj:
             yield from obj
 
     @property
@@ -118,7 +118,6 @@ if "ssl_certfile" in sess.config["uvicorn"].keys():
 # ⚙️🔧 Basic Api setup
 # －－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
 # －－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
-
 
 
 # 📑📮 WebSockets
@@ -191,7 +190,7 @@ async def get_keys():
 
 class Encodings(str, Enum):
     """
-    Available encodings
+    Available compressing
     """
 
     gz = "gzip"
@@ -205,7 +204,7 @@ async def get_part(name: str, f: Encodings = Encodings.json):
         Получает отображаемый объект по имени
     """
     if f.name == "gz":
-        return StreamingResponse(sess.s3.get_object(Bucket=sess.bucket, Key=sess.view + name)["Body"],
+        return StreamingResponse(sess.s3.get_compress_view(name),
                                  media_type="gzip")
     elif f.name == "json":
         return StreamingResponse(sess.s3.get_object(Bucket=sess.bucket, Key=sess.decompress_view + name)["Body"])
@@ -371,10 +370,6 @@ app.openapi = custom_openapi
 
 
 if __name__ == '__main__':
-    with open("api_log.txt", "wb") as api_logfile:
-        print(sess, file=sys.stdout, flush=True)
-
-    with uvicorn.run('main:app', port=sess.config["port"], host=sess.config["host"], **sess.config["uvicorn"]) as unc:
-        print(unc.stdout)
+    uvicorn.run('main:app', port=sess.config["port"], host=sess.config["host"], **sess.config["uvicorn"])
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
