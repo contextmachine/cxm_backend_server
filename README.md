@@ -8,6 +8,6 @@
 Minimal backend for model applications.\
 
 Use for cxm viewer basic connection.\
-Can be temaplate.\
+Can be temaplate.
 
 Playground: https://mmodel.contextmachine.online:8181/docs
