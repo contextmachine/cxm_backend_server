@@ -11,7 +11,8 @@ Use for cxm viewer basic connection.
 Can be temaplate.
 
 Playground: https://mmodel.contextmachine.online:8181/docs
-
+## Package
+https://github.com/orgs/contextmachine/packages/container/cxm_backend_server/settings
 ## Install
 ### Docker
 ```bash
