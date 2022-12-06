@@ -1,3 +1,4 @@
+# /usr/bun/python
 #  Copyright (c) CONTEXTMACHINE 2022.
 #  AEC, computational geometry, digital engineering and Optimizing construction processes.
 #
@@ -11,10 +12,12 @@
 #
 #
 
-from typing import Optional, Union, Any, List, Sized
-from pydantic import BaseModel
 from dataclasses import dataclass
 from enum import Enum
+from pydantic import BaseModel
+from typing import Optional, Union, Any, List, Sized
+
+
 # Metadata
 # ----------------------------------------------------------------------------------------------------------------------
 # Configs
@@ -109,3 +112,4 @@ class ScenePatch(BaseModel):
     """
 
     patch: Scene
+

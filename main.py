@@ -1,3 +1,4 @@
+# /usr/bun/python
 #  Copyright (c) CONTEXTMACHINE 2022.
 #  AEC, computational geometry, digital engineering and Optimizing construction processes.
 #
@@ -13,9 +14,8 @@
 import json
 import os
 import sys
-from enum import Enum
-
 import uvicorn
+from enum import Enum
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -26,22 +26,32 @@ from fastapi.responses import StreamingResponse, PlainTextResponse
 from cxm.buckets.apps import AppSession
 from cxm.models import Scene, ScenePatch, Scenes
 
-sys.path.extend([f"{os.getenv('PWD')}/mount_sorces"])
+sys.path.extend([f"/share"])
 print("Starting mmodel server ...")
-
-
+with open("configs.json", "r") as configfile:
+    configdata = json.load(configfile)
+    
 class CxmViewerAppSession(AppSession):
+    
+    _config=configdata
+    storage= "https://storage.yandexcloud.net/"
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        
         self.validate_context()
-
+        
+            
         self.decompress_view = "tmpj/"
         self._existing_scenes = None
         self._topics = None
-        super().__init__(buck=self.bucket)
+        super().__init__(buck=configdata["bucket"],**kwargs)
         self.x_logo = dict(
             url=self.storage + self.bucket + self.full_icon
         )
+   
+
+    def get(self, name, prefix):
+        return self.s3.get_object(Bucket=self.bucket, Key=prefix + name)
 
     def stream_view(self, name):
         return self.s3.get_object(Bucket=self.bucket, Key=self.view + name)["Body"]
@@ -53,6 +63,9 @@ class CxmViewerAppSession(AppSession):
     def get_compress_view(self, name):
         with self.s3.get_object(Bucket=self.bucket, Key=self.view + name)["Body"] as obj:
             yield from obj
+
+    def get_redirect_view(self, name):
+        return self.storage + "/" + self.bucket + "/" + self.view + name
 
     @property
     def existing_scenes(self):
@@ -87,7 +100,12 @@ class CxmViewerAppSession(AppSession):
                "\n\tconfig.json:\n{}\n\nCopyright (c) CONTEXTMACHINE 2022.\n".format(json.dumps(self.config, indent=3))
 
 
-sess = CxmViewerAppSession()
+sess = CxmViewerAppSession(aws_access_key_id=configdata["aws_access_key_id"],
+        aws_secret_access_key=configdata["aws_secret_access_key"],
+        aws_session_token=None,
+        region_name=configdata["region"],
+        botocore_session=None,
+        profile_name=None,)
 
 # FastApi
 # ----------------------------------------------------------------------------------------------------------------------
@@ -248,6 +266,7 @@ async def create_scene(data: Scene):
         Сreate new scene object
         Создает новую сцену
     """
+    
     scene = data.json(ensure_ascii=False, indent=3)
     sess.put_object(name=data.metadata.name, data=scene, pref=sess.scenes)
 
@@ -309,31 +328,35 @@ async def get_file(name: str):
 
 
 @app.post("/files/{name}")
-async def upload_file(name: str, file: UploadFile = File(description="Update file as UploadFile")):
+async def upload_file(name:str, file: UploadFile = File(description="Update file as UploadFile")):
     """
         Обновите/загрузите файл.
     """
-    file.filename = name
+    if "." in name:
+        file.filename  = name.split(".")[0]
+    else: 
+        file.filename = name
     content = await file.read()
+
     sess.put_object(name, pref=sess.config["filesystem"], data=content)
-    with open(f"/home/sthv/ifctest/ifctest/cxm/data/{name}", "wb") as fp:
-        fp.write(content)
 
-    return {name: file.__sizeof__()}
+    return {"name": name, "path": sess.config["filesystem"]}
 
 
-@app.post("/files/{name}")
-async def test_download(name: str, file: UploadFile = File(description="Update file as UploadFile")):
+@app.post("/files/json/{name}")
+async def upload_json(name:str, file: UploadFile = File(description="Update file as UploadFile")):
     """
-        Обновите/загрузите файл.
+        Обновите/загрузите json файл.
     """
-    file.filename = name
+
+    if "." in name:
+        file.filename = name.split(".")[0]
+    else:
+        file.filename = name
     content = await file.read()
-    sess.put_object(name, pref=sess.config["filesystem"], data=content)
-    with open(f"/home/sthv/ifctest/ifctest/cxm/data/{name}", "wb") as fp:
-        fp.write(content)
 
-    return {name: file.__sizeof__()}
+    sess.put_object(name, pref=sess.config["decompress_view"], data=content)
+    return {"name": name, "path": sess.config["decompress_view"]}
 
 
 def custom_openapi():
@@ -363,13 +386,14 @@ def custom_openapi():
     return app.openapi_schema
 
 
-# app.add_middleware(HTTPSRedirectMiddleware)
+app.add_middleware(HTTPSRedirectMiddleware)
 app.openapi = custom_openapi
 
 # Press the green button in the gutter to run the script.
 
-
-if __name__ == '__main__':
-    uvicorn.run('main:app', port=sess.config["port"], host=sess.config["host"], **sess.config["uvicorn"])
+if __name__=="__main__":
+    
+    print(configdata["uvicorn"])
+    uvicorn.run('main:app', port=443, host='0.0.0.0',ssl_keyfile="share/private_key.pem", ssl_certfile="share/certificate_full_chain.pem", workers=4)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
