@@ -16,7 +16,7 @@ https://github.com/orgs/contextmachine/packages/container/cxm_backend_server/set
 ### Docker
 Pull container:
 ```bash
-docker pull ghcr.io/contextmachine/cxm_backend_server:sha256-a9f320ddc47d8ec47401b7ba36d05352a5929bebf547bbd8a86a28e1caae1dd0.sig
+docker pull ghcr.io/contextmachine/cxm_backend_server:master
 ```
 Build & run image:
 ```bash
