@@ -8,7 +8,7 @@ Use for cxm viewer basic connection.
 
 Can be temaplate.
 
-Playground: https://mmodel.contextmachine.online:8181/docs
+Playground: https://api.contextmachine.online/docs
 
 ## Package
 
