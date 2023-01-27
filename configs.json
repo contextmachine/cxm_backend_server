@@ -1,0 +1,27 @@
+{
+  "name": "lahta",
+  "storage": "https://storage.yandexcloud.net/",
+  "bucket": "lahta.contextmachine.online",
+  "host": "0.0.0.0",
+  "port": 443,
+  "icon": "icon.png",
+  "full_icon": "fullicon.png",
+  "view": "tmp/",
+  "decompress_view": "tmpj/",
+  "scenes": "scenes/",
+  "internal": "cxm/internal/",
+  "filesystem": "workspace/cxm/",
+  "aws_access_key_id" : "YCAJEfPewAGyo2K-BtlmWNl58",
+  "aws_secret_access_key": "YCMA8ZF2s_YFoD1WvsMCaym8dx4ZR9eXJ6_f5mmL",
+  "region":"ru-central1",
+  "ssl_certfile": "certificate_full_chain.pem",
+  "ssl_keyfile": "private_key.pem\n",
+  "uvicorn": {
+    "workers": 1,
+    "ssl_certfile": "share/cert.pem",
+    "ssl_keyfile": "share/key.pem",
+    "debug": true,
+    "backlog": 32768
+  }
+  
+}
