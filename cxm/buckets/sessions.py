@@ -17,18 +17,19 @@ import boto3
 os.environ.setdefault("STORAGE", "https://storage.yandexcloud.net/")
 
 
+
 class WatchSession(object):
-    session = boto3.session.Session()
     storage = os.environ["STORAGE"]
 
-    def __init__(self, bucket=None):
+    def __init__(self, bucket=None, **kwargs):
+        self.session = boto3.session.Session(**kwargs)
         super().__init__()
         self.bucket = bucket
 
 
 class S3Session(WatchSession):
     def __init__(self, bucket=None, **kwargs):
-        super().__init__(bucket)
+        super().__init__(bucket, **kwargs)
         self.s3 = self.session.client(
             service_name='s3',
             endpoint_url=self.storage

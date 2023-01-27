@@ -14,8 +14,9 @@
 import json
 import os
 import sys
-import uvicorn
 from enum import Enum
+
+import uvicorn
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -222,7 +223,7 @@ async def get_part(name: str, f: Encodings = Encodings.json):
         Получает отображаемый объект по имени
     """
     if f.name == "gz":
-        return StreamingResponse(sess.s3.get_compress_view(name),
+        return StreamingResponse(sess.get_compress_view(name),
                                  media_type="gzip")
     elif f.name == "json":
         return StreamingResponse(sess.s3.get_object(Bucket=sess.bucket, Key=sess.decompress_view + name)["Body"])

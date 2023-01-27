@@ -11,22 +11,25 @@
 #
 #
 import json
+
 from cxm.buckets.sessions import S3Session
 
 
 class AppSession(S3Session):
+    _config = {}
 
-    def __init__(self, buck=None):
-        super().__init__(bucket=buck)
+    def __init__(self, buck=None, **kwargs):
+        super().__init__(bucket=buck, **kwargs)
 
         self.view = "tmp/"
         self.full_icon = ""
         self.icon = ""
         self.scenes = "scenes/"
-        self.__dict__ |= self.config
+        self.__dict__ |= self._config
 
     @property
     def config(self):
+        print(self.bucket)
         return json.loads(self.s3.get_object(Bucket=self.bucket, Key="config.json")["Body"].read())
 
     def get_icon(self):
