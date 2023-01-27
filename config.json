@@ -1,0 +1,22 @@
+{
+  "name": "lahta",
+  "storage": "https://storage.yandexcloud.net/",
+  "bucket": "lahta.contextmachine.online",
+  "host": "0.0.0.0",
+  "port": 8181,
+  "icon": "icon.png",
+  "full_icon": "fullicon.png",
+  "view": "tmp/",
+  "decompress_view": "tmpj/",
+  "scenes": "scenes/",
+  "internal": "cxm/internal/",
+  "filesystem": "workspace/cxm/",
+  "uvicorn": {
+    "workers": 4,
+    "ssl_certfile": "share/certificate_full_chain.pem",
+    "ssl_keyfile": "share/private_key.pem",
+    "debug": true,
+    "backlog": 32768
+  }
+  
+}
