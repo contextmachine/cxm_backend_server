@@ -26,9 +26,9 @@ from fastapi.responses import StreamingResponse, PlainTextResponse
 from cxm.buckets.apps import AppSession
 from cxm.models import Scene, ScenePatch, Scenes
 
-sys.path.extend([f"/share"])
+sys.path.extend([f"/code/share"])
 print("Starting mmodel server ...")
-with open("configs.json", "r") as configfile:
+with open("config.json", "r") as configfile:
     configdata = json.load(configfile)
     
 class CxmViewerAppSession(AppSession):
